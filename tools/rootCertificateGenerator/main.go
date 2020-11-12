@@ -14,7 +14,7 @@ import (
 )
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "Usage: %s ouput_cert_file output_rsa_private_key_file\n", os.Args[0])
+	fmt.Fprintf(os.Stderr, "Usage: %s ouput_cert_file output_rsa_private_key_file [output_client_cert]\n", os.Args[0])
 	os.Exit(2)
 }
 
@@ -87,5 +87,30 @@ func main() {
 			exitWithError(fmt.Sprint("Cant Write to file", os.Args[2]), err)
 		}
 		f.Close()
+	}
+
+	if len(os.Args) > 3 {
+		// create the CA
+		caBytes, err := x509.CreateCertificate(rand.Reader, ca, ca, &caPrivKey.PublicKey, caPrivKey)
+		if err != nil {
+			panic(err)
+		}
+
+		// pem encode
+		caPEM := new(bytes.Buffer)
+		pem.Encode(caPEM, &pem.Block{
+			Type:  "CERTIFICATE",
+			Bytes: caBytes,
+		})
+		{
+			f, err := os.OpenFile(os.Args[3], os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+			if err != nil {
+				exitWithError(fmt.Sprint("Cant Open file", os.Args[3]), err)
+			}
+			if _, err := f.Write(caPEM.Bytes()); err != nil {
+				exitWithError(fmt.Sprint("Cant Write to file", os.Args[3]), err)
+			}
+			f.Close()
+		}
 	}
 }

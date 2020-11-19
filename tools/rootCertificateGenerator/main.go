@@ -35,6 +35,7 @@ func main() {
 			Country:      []string{"FR"},
 			Province:     []string{""},
 			Locality:     []string{"montcuq"},
+			CommonName:   "FakeCertificateCorporation",
 		},
 		NotBefore:             time.Now(),
 		NotAfter:              time.Now().AddDate(10, 0, 0),
